@@ -1,7 +1,6 @@
 out
+bin
+obj
 
 .idea
-.iml
-
-.gradle
-build
+.vs

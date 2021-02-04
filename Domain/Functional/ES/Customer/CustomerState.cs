@@ -23,18 +23,26 @@ namespace Domain.Functional.ES.Customer
         public void Apply(List<IEvent> events) {
             foreach (var @event in events)
             {
-                if (@event is CustomerRegistered) {
-                    // TODO
+                if (@event is CustomerRegistered customerRegisteredEvent)
+                {
+                    Name = customerRegisteredEvent.Name;
+                    ConfirmationHash = customerRegisteredEvent.ConfirmationHash;
+                    EmailAddress = customerRegisteredEvent.EmailAddress;
+                    IsEmailAddressConfirmed = false;
                     continue;
                 }
 
-                if (@event is CustomerEmailAddressConfirmed) {
-                    // TODO
+                if (@event is CustomerEmailAddressConfirmed)
+                {
+                    IsEmailAddressConfirmed = true;
                     continue;
                 }
 
-                if (@event is CustomerEmailAddressChanged) {
-                    // TODO
+                if (@event is CustomerEmailAddressChanged customerEmailAddressChangedEvent)
+                {
+                    EmailAddress = customerEmailAddressChangedEvent.EmailAddress;
+                    ConfirmationHash = customerEmailAddressChangedEvent.ConfirmationHash;
+                    IsEmailAddressConfirmed = false;
                 }
             }
         }

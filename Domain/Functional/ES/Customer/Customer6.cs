@@ -6,23 +6,38 @@ namespace Domain.Functional.ES.Customer
 {
     public class Customer6 {
         public static CustomerRegistered Register(RegisterCustomer command) {
-            return null; // TODO
+            return CustomerRegistered.Build(command.CustomerId, command.EmailAddress, command.ConfirmationHash, command.Name);
         }
 
         public static List<IEvent> ConfirmEmailAddress(List<IEvent> eventStream, ConfirmCustomerEmailAddress command) {
             var current = CustomerState.Reconstitute(eventStream);
 
-            // TODO
+            var generatedEvents = new List<IEvent>();
 
-            return new List<IEvent>(); // TODO
+            if (!command.ConfirmationHash.Equals(current.ConfirmationHash))
+            {
+                generatedEvents.Add(CustomerEmailAddressConfirmationFailed.Build(command.CustomerId));
+            }
+            else
+            {
+                if (!current.IsEmailAddressConfirmed)
+                    generatedEvents.Add(CustomerEmailAddressConfirmed.Build(command.CustomerId));
+            }
+
+            return generatedEvents;
         }
 
         public static List<IEvent> ChangeEmailAddress(List<IEvent> eventStream, ChangeCustomerEmailAddress command) {
             var current = CustomerState.Reconstitute(eventStream);
 
-            // TODO
+            var generatedEvents = new List<IEvent>();
 
-            return new List<IEvent>(); // TODO
+            if (!command.EmailAddress.Equals(current.EmailAddress))
+            {
+                generatedEvents.Add(CustomerEmailAddressChanged.Build(command.CustomerId, command.EmailAddress, command.ConfirmationHash));
+            }
+
+            return generatedEvents;
         }
     }
 }

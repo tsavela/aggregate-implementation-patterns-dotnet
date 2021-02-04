@@ -15,7 +15,7 @@ namespace Domain.OOP.ES.Customer
         }
 
         public static CustomerRegistered Register(RegisterCustomer command) {
-            return null; // TODO
+            return CustomerRegistered.Build(command.CustomerId, command.EmailAddress, command.ConfirmationHash, command.Name);
         }
 
         public static Customer3 Reconstitute(List<IEvent> events) {
@@ -27,15 +27,29 @@ namespace Domain.OOP.ES.Customer
         }
 
         public List<IEvent> ConfirmEmailAddress(ConfirmCustomerEmailAddress command) {
-            // TODO
+            var events = new List<IEvent>();
 
-            return new List<IEvent>(); // TODO
+            if (Equals(command.ConfirmationHash, ConfirmationHash))
+            {
+                if(!IsEmailAddressConfirmed)
+                    events.Add(CustomerEmailAddressConfirmed.Build(command.CustomerId));
+            }
+            else
+                events.Add(CustomerEmailAddressConfirmationFailed.Build(command.CustomerId));
+
+            return events;
         }
 
-        public List<IEvent> ChangeEmailAddress(ChangeCustomerEmailAddress command) {
-            // TODO
+        public List<IEvent> ChangeEmailAddress(ChangeCustomerEmailAddress command)
+        {
+            var events = new List<IEvent>();
 
-            return new List<IEvent>(); // TODO
+            if(!Equals(command.EmailAddress, EmailAddress))
+            {
+                events.Add(CustomerEmailAddressChanged.Build(command.CustomerId, command.EmailAddress, command.ConfirmationHash));
+            }
+
+            return events;
         }
 
         public void Apply(List<IEvent> events) {
@@ -46,12 +60,19 @@ namespace Domain.OOP.ES.Customer
         }
 
         public void Apply(IEvent @event) {
-            if (@event is CustomerRegistered) {
-                // TODO
-            } else if (@event is CustomerEmailAddressConfirmed) {
-                // TODO
-            } else if (@event is CustomerEmailAddressChanged) {
-                // TODO
+            if (@event is CustomerRegistered customerRegisteredEvent)
+            {
+                Name = customerRegisteredEvent.Name;
+                ConfirmationHash = customerRegisteredEvent.ConfirmationHash;
+                EmailAddress = customerRegisteredEvent.EmailAddress;
+                IsEmailAddressConfirmed = false;
+            } else if (@event is CustomerEmailAddressConfirmed customerEmailAddressConfirmedEvent) {
+                IsEmailAddressConfirmed = true;
+            } else if (@event is CustomerEmailAddressChanged customerEmailAddressChangedEvent)
+            {
+                IsEmailAddressConfirmed = false;
+                EmailAddress = customerEmailAddressChangedEvent.EmailAddress;
+                ConfirmationHash = customerEmailAddressChangedEvent.ConfirmationHash;
             }
         }
     }

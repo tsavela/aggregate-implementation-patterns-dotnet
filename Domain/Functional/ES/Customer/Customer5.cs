@@ -6,8 +6,9 @@ using Domain.Shared.Value;
 namespace Domain.Functional.ES.Customer
 {
     public class Customer5 {
-        public static CustomerRegistered Register(RegisterCustomer command) {
-            return null; // TODO
+        public static CustomerRegistered Register(RegisterCustomer command)
+        {
+            return CustomerRegistered.Build(command.CustomerId, command.EmailAddress, command.ConfirmationHash, command.Name);
         }
 
         public static List<IEvent> ConfirmEmailAddress(List<IEvent> eventStream, ConfirmCustomerEmailAddress command) {
@@ -15,34 +16,56 @@ namespace Domain.Functional.ES.Customer
             Hash confirmationHash = null;
             foreach (var @event in eventStream)
             {
-                if (@event is CustomerRegistered) {
-                    // TODO
-                } else if (@event is CustomerEmailAddressConfirmed) {
-                    // TODO
-                } else if (@event is CustomerEmailAddressChanged) {
-                    // TODO
+                if (@event is CustomerRegistered customerRegisteredEvent)
+                {
+                    isEmailAddressConfirmed = false;
+                    confirmationHash = customerRegisteredEvent.ConfirmationHash;
+                } else if (@event is CustomerEmailAddressConfirmed customerEmailAddressConfirmedEvent) {
+                    isEmailAddressConfirmed = true;
+                } else if (@event is CustomerEmailAddressChanged customerEmailAddressChangedEvent) {
+                    isEmailAddressConfirmed = false;
+                    confirmationHash = customerEmailAddressChangedEvent.ConfirmationHash;
                 }
             }
 
-            // TODO
+            var generatedEvents = new List<IEvent>();
 
-            return new List<IEvent>(); // TODO
+            if (!confirmationHash.Equals(command.ConfirmationHash))
+            {
+                generatedEvents.Add(CustomerEmailAddressConfirmationFailed.Build(command.CustomerId));
+            }
+            else
+            {
+                if (!isEmailAddressConfirmed)
+                {
+                    generatedEvents.Add(CustomerEmailAddressConfirmed.Build(command.CustomerId));
+                }
+            }
+
+            return generatedEvents;
         }
 
         public static List<IEvent> ChangeEmailAddress(List<IEvent> eventStream, ChangeCustomerEmailAddress command) {
             EmailAddress emailAddress = null;
             foreach (var @event in eventStream)
             {
-                if (@event is CustomerRegistered) {
-                    // TODO
-                } else if (@event is CustomerEmailAddressChanged) {
-                    // TODO
+                if (@event is CustomerRegistered customerRegisteredEvent)
+                {
+                    emailAddress = customerRegisteredEvent.EmailAddress;
+                } else if (@event is CustomerEmailAddressChanged customerEmailAddressChangedEvent)
+                {
+                    emailAddress = customerEmailAddressChangedEvent.EmailAddress;
                 }
             }
 
-            // TODO
+            var generatedEvents = new List<IEvent>();
 
-            return new List<IEvent>(); // TODO
+            if (emailAddress == null || !emailAddress.Equals(command.EmailAddress))
+            {
+                generatedEvents.Add(CustomerEmailAddressChanged.Build(command.CustomerId, command.EmailAddress, command.ConfirmationHash));
+            }
+
+            return generatedEvents;
         }
     }
 }

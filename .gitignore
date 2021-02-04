@@ -1,12 +1,6 @@
 out
-
-.idea
-.iml
-
-.gradle
-build
-
-
-.cs
 bin
 obj
+
+.idea
+.vs

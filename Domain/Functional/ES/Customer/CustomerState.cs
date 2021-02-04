@@ -5,10 +5,10 @@ using Domain.Shared.Value;
 namespace Domain.Functional.ES.Customer
 {
     public class CustomerState {
-        EmailAddress emailAddress;
-        Hash confirmationHash;
-        PersonName name;
-        bool isEmailAddressConfirmed;
+        public EmailAddress EmailAddress { get; private set; }
+        public Hash ConfirmationHash { get; private set; }
+        public PersonName Name { get; private set; }
+        public bool IsEmailAddressConfirmed { get; private set; }
 
         private CustomerState() {}
 
@@ -20,7 +20,7 @@ namespace Domain.Functional.ES.Customer
             return customer;
         }
 
-        void Apply(List<IEvent> events) {
+        public void Apply(List<IEvent> events) {
             foreach (var @event in events)
             {
                 if (@event is CustomerRegistered) {

@@ -1,0 +1,6 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e8c96a8d_002D65f9_002D410d_002D9ca4_002D5daf8f25a4d3/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="confirmEmailAddress_withWrongConfirmationHash" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::3ED76A47-D787-40FA-A1BD-A7B05D0CE06F::net5.0::Domain.Tests.Functional.ES.Customer.Customer5Test.confirmEmailAddress_withWrongConfirmationHash&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

@@ -1,3 +1,5 @@
+using Domain.Shared.Value;
+
 namespace Domain.Shared.Event
 {
     public class CustomerEmailAddressConfirmed : IEvent {

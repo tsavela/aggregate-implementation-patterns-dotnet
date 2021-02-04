@@ -1,4 +1,5 @@
 using Domain.Shared.Event;
+using Domain.Shared.Value;
 
 public class CustomerEmailAddressConfirmationFailed : IEvent
 {

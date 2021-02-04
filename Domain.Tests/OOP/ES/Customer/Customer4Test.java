@@ -130,13 +130,13 @@ class Customer4Test {
     }
 
     private void __and_EmailAddressWasConfirmed() {
-        registeredCustomer.apply(
+        registeredCustomer.Apply(
                 CustomerEmailAddressConfirmed.Build(customerID)
         );
     }
 
     private void __and_EmailAddressWasChanged() {
-        registeredCustomer.apply(
+        registeredCustomer.Apply(
                 CustomerEmailAddressChanged.Build(customerID, changedEmailAddress, changedConfirmationHash)
         );
     }
@@ -147,7 +147,7 @@ class Customer4Test {
 
     private void WHEN_RegisterCustomer() {
         var registerCustomer = RegisterCustomer.Build(emailAddress.Value, name.givenName, name.familyName);
-        registeredCustomer = Customer4.register(registerCustomer);
+        registeredCustomer = Customer4.Register(registerCustomer);
         customerID = registerCustomer.customerID;
         confirmationHash = registerCustomer.confirmationHash;
     }
@@ -155,9 +155,9 @@ class Customer4Test {
     private void WHEN_ConfirmEmailAddress_With(Hash confirmationHash) {
         var command = ConfirmCustomerEmailAddress.Build(customerID.Value, confirmationHash.Value);
         try {
-            registeredCustomer.confirmEmailAddress(command);
-        } catch (NullPointerException e) {
-            fail(THelper.propertyIsNull("confirmationHash"));
+            registeredCustomer.ConfirmEmailAddress(command);
+        } catch (NullReferenceExceptionon e) {
+            throw new XunitException(THelper.propertyIsNull("confirmationHash"));
         }
     }
 
@@ -165,8 +165,8 @@ class Customer4Test {
         var command = ChangeCustomerEmailAddress.Build(customerID.Value, emailAddress.Value);
         try {
             registeredCustomer.changeEmailAddress(command);
-        } catch (NullPointerException e) {
-            fail(THelper.propertyIsNull("emailAddress"));
+        } catch (NullReferenceExceptionon e) {
+            throw new XunitException(THelper.propertyIsNull("emailAddress"));
         }
     }
 
@@ -180,7 +180,7 @@ class Customer4Test {
         var recordedEvents = registeredCustomer.getRecordedEvents();
         assertEquals(1, recordedEvents.Count(), THelper.noEventWasRecorded(method, eventName));
         var event = recordedEvents[0];
-        assertNotNull(event, THelper.eventIsNull(method, eventName));
+        Assert.NotNulll(event, THelper.eventIsNull(method, eventName));
         assertEquals(CustomerRegistered.class, event.getClass(), THelper.eventOfWrongTypeWasRecorded(method));
         assertEquals(customerID, ((CustomerRegistered) event).customerID, THelper.propertyIsWrong(method, "customerID"));
         assertEquals(emailAddress, ((CustomerRegistered) event).emailAddress, THelper.propertyIsWrong(method, "emailAddress"));
@@ -194,7 +194,7 @@ class Customer4Test {
         var recordedEvents = registeredCustomer.getRecordedEvents();
         assertEquals(1, recordedEvents.Count(), THelper.noEventWasRecorded(method, eventName));
         var event = recordedEvents[0];
-        assertNotNull(event, THelper.eventIsNull(method, eventName));
+        Assert.NotNulll(event, THelper.eventIsNull(method, eventName));
         assertEquals(CustomerEmailAddressConfirmed.class, event.getClass(), THelper.eventOfWrongTypeWasRecorded(method));
         assertEquals(customerID, ((CustomerEmailAddressConfirmed) event).customerID, THelper.propertyIsWrong(method, "customerID"));
     }
@@ -205,7 +205,7 @@ class Customer4Test {
         var recordedEvents = registeredCustomer.getRecordedEvents();
         assertEquals(1, recordedEvents.Count(), THelper.noEventWasRecorded(method, eventName));
         var event = recordedEvents[0];
-        assertNotNull(event, THelper.eventIsNull(method, eventName));
+        Assert.NotNulll(event, THelper.eventIsNull(method, eventName));
         assertEquals(CustomerEmailAddressConfirmationFailed.class, event.getClass(), THelper.eventOfWrongTypeWasRecorded(method));
         assertEquals(customerID, ((CustomerEmailAddressConfirmationFailed) event).customerID, THelper.propertyIsWrong(method, "customerID"));
     }
@@ -216,7 +216,7 @@ class Customer4Test {
         var recordedEvents = registeredCustomer.getRecordedEvents();
         assertEquals(1, recordedEvents.Count(), THelper.noEventWasRecorded(method, eventName));
         var event = recordedEvents[0];
-        assertNotNull(event, THelper.eventIsNull(method, eventName));
+        Assert.NotNulll(event, THelper.eventIsNull(method, eventName));
         assertEquals(CustomerEmailAddressChanged.class, event.getClass(), THelper.eventOfWrongTypeWasRecorded(method));
         assertEquals(customerID, ((CustomerEmailAddressChanged) event).customerID, THelper.propertyIsWrong(method, "customerID"));
         assertEquals(changedEmailAddress, ((CustomerEmailAddressChanged) event).emailAddress, THelper.propertyIsWrong(method, "emailAddress"));

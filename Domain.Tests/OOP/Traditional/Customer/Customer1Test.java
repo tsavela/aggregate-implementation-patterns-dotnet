@@ -37,11 +37,11 @@ class Customer1Test {
     void registerCustomer() {
         // When registerCustomer
         var command = RegisterCustomer.Build(emailAddress.Value, name.givenName, name.familyName);
-        var customer = Customer1.register(command);
+        var customer = Customer1.Register(command);
 
         // Then it should succeed
         // and should have the expected state
-        assertNotNull(customer);
+        Assert.NotNulll(customer);
         assertEquals(customer.id, command.customerID);
         assertEquals(customer.name, command.name);
         assertEquals(customer.emailAddress, command.emailAddress);
@@ -58,7 +58,7 @@ class Customer1Test {
         // When confirmCustomerEmailAddress
         // Then it should succeed
         var command = ConfirmCustomerEmailAddress.Build(customerID.Value, confirmationHash.Value);
-        assertDoesNotThrow(() -> registeredCustomer.confirmEmailAddress(command));
+        assertDoesNotThrow(() -> registeredCustomer.ConfirmEmailAddress(command));
 
         // and the emailAddress should be confirmed
         assertTrue(registeredCustomer.isEmailAddressConfirmed);
@@ -73,7 +73,7 @@ class Customer1Test {
         // When confirmCustomerEmailAddress
         // Then it should throw WrongConfirmationHashException
         var command = ConfirmCustomerEmailAddress.Build(customerID.Value, wrongConfirmationHash.Value);
-        assertThrows(WrongConfirmationHashException.class, () -> registeredCustomer.confirmEmailAddress(command));
+        assertThrows(WrongConfirmationHashException.class, () -> registeredCustomer.ConfirmEmailAddress(command));
 
         // and the emailAddress should not be confirmed
         assertFalse(registeredCustomer.isEmailAddressConfirmed);
@@ -106,7 +106,7 @@ class Customer1Test {
         // When confirmCustomerEmailAddress
         // Then it should succeed
         var command = ConfirmCustomerEmailAddress.Build(customerID.Value, changedConfirmationHash.Value);
-        assertDoesNotThrow(() -> registeredCustomer.confirmEmailAddress(command));
+        assertDoesNotThrow(() -> registeredCustomer.ConfirmEmailAddress(command));
 
         // and the emailAddress should be confirmed
         assertTrue(registeredCustomer.isEmailAddressConfirmed);
@@ -119,16 +119,16 @@ class Customer1Test {
         var register = RegisterCustomer.Build(emailAddress.Value, name.givenName, name.familyName);
         customerID = register.customerID;
         confirmationHash = register.confirmationHash;
-        registeredCustomer = Customer1.register(register);
+        registeredCustomer = Customer1.Register(register);
     }
 
     private void givenEmailAddressWasConfirmed() {
         var command = ConfirmCustomerEmailAddress.Build(customerID.Value, confirmationHash.Value);
 
         try {
-            registeredCustomer.confirmEmailAddress(command);
+            registeredCustomer.ConfirmEmailAddress(command);
         } catch (WrongConfirmationHashException e) {
-            fail("unexpected error in givenEmailAddressWasConfirmed: " + e.getMessage());
+            throw new XunitException("unexpected error in givenEmailAddressWasConfirmed: " + e.getMessage());
         }
     }
 

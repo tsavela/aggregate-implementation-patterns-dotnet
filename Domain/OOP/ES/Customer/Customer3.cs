@@ -38,14 +38,14 @@ namespace Domain.OOP.ES.Customer
             return new List<IEvent>(); // TODO
         }
 
-        void Apply(List<IEvent> events) {
+        public void Apply(List<IEvent> events) {
             foreach (var @event in events)
             {
                 Apply(@event);
             }
         }
 
-        void Apply(IEvent @event) {
+        public void Apply(IEvent @event) {
             if (@event is CustomerRegistered) {
                 // TODO
             } else if (@event is CustomerEmailAddressConfirmed) {

@@ -1,14 +1,18 @@
+
+using System;
 using System.Collections.Generic;
-using Domain.Functional.ES.Customer;
+using System.Linq;
+using Domain.OOP.ES.Customer;
 using Domain.Shared.Command;
 using Domain.Shared.Event;
 using Domain.Shared.Value;
+using FluentAssertions;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Domain.Tests.Functional.ES.Customer
+namespace Domain.Tests.OOP.ES.Customer
 {
-    public class Customer5Test {
+    public class Customer3Test {
         private ID customerID;
         private EmailAddress emailAddress;
         private EmailAddress changedEmailAddress;
@@ -16,11 +20,11 @@ namespace Domain.Tests.Functional.ES.Customer
         private Hash wrongConfirmationHash;
         private Hash changedConfirmationHash;
         private PersonName name;
-        private List<IEvent> eventStream;
         private CustomerRegistered customerRegistered;
         private List<IEvent> recordedEvents;
+        private Customer3 registeredCustomer;
 
-        public Customer5Test()
+        public Customer3Test()
         {
             customerID = ID.Generate();
             emailAddress = EmailAddress.Build("john@doe.com");
@@ -29,32 +33,30 @@ namespace Domain.Tests.Functional.ES.Customer
             wrongConfirmationHash = Hash.Generate();
             changedConfirmationHash = Hash.Generate();
             name = PersonName.Build("John", "Doe");
-            eventStream = new List<IEvent>();
-            recordedEvents = new List<IEvent>();
         }
 
         [Fact]
-        public void RegisterCustomer() {
+        void registerCustomer() {
             WHEN_RegisterCustomer();
             THEN_CustomerRegistered();
         }
 
         [Fact]
-        public void ConfirmEmailAddress() {
+        void confirmEmailAddress() {
             GIVEN_CustomerRegistered();
             WHEN_ConfirmEmailAddress_With(confirmationHash);
             THEN_EmailAddressConfirmed();
         }
 
         [Fact]
-        public void confirmEmailAddress_withWrongConfirmationHash() {
+        void confirmEmailAddress_withWrongConfirmationHash() {
             GIVEN_CustomerRegistered();
             WHEN_ConfirmEmailAddress_With(wrongConfirmationHash);
             THEN_EmailAddressConfirmationFailed();
         }
 
         [Fact]
-        public void confirmEmailAddress_whenItWasAlreadyConfirmed() {
+        void confirmEmailAddress_whenItWasAlreadyConfirmed() {
             GIVEN_CustomerRegistered();
             __and_EmailAddressWasConfirmed();
             WHEN_ConfirmEmailAddress_With(confirmationHash);
@@ -62,7 +64,7 @@ namespace Domain.Tests.Functional.ES.Customer
         }
 
         [Fact]
-        public void confirmEmailAddress_withWrongConfirmationHash_whenItWasAlreadyConfirmed() {
+        void confirmEmailAddress_withWrongConfirmationHash_whenItWasAlreadyConfirmed() {
             GIVEN_CustomerRegistered();
             __and_EmailAddressWasConfirmed();
             WHEN_ConfirmEmailAddress_With(wrongConfirmationHash);
@@ -70,22 +72,21 @@ namespace Domain.Tests.Functional.ES.Customer
         }
 
         [Fact]
-        public void changeEmailAddress() {
+        void changeEmailAddress() {
             GIVEN_CustomerRegistered();
             WHEN_ChangeEmailAddress_With(changedEmailAddress);
             THEN_EmailAddressChanged();
         }
 
         [Fact]
-        public void changeEmailAddress_withUnchangedEmailAddress() {
-            // Given
+        void changeEmailAddress_withUnchangedEmailAddress() {
             GIVEN_CustomerRegistered();
             WHEN_ChangeEmailAddress_With(emailAddress);
             THEN_NothingShouldHappen();
         }
 
         [Fact]
-        public void changeEmailAddress_whenItWasAlreadyChanged() {
+        void changeEmailAddress_whenItWasAlreadyChanged() {
             GIVEN_CustomerRegistered();
             __and_EmailAddressWasChanged();
             WHEN_ChangeEmailAddress_With(changedEmailAddress);
@@ -93,8 +94,7 @@ namespace Domain.Tests.Functional.ES.Customer
         }
 
         [Fact]
-        public void confirmEmailAddress_whenItWasPreviouslyConfirmedAndThenChanged() {
-            // Given
+        void confirmEmailAddress_whenItWasPreviouslyConfirmedAndThenChanged() {
             GIVEN_CustomerRegistered();
             __and_EmailAddressWasConfirmed();
             __and_EmailAddressWasChanged();
@@ -106,27 +106,32 @@ namespace Domain.Tests.Functional.ES.Customer
      * Methods for GIVEN
      */
 
-        private void GIVEN_CustomerRegistered() {
-            eventStream.Add(CustomerRegistered.Build(customerID, emailAddress, confirmationHash, name));
+        private void GIVEN_CustomerRegistered()
+        {
+            var events = new List<IEvent> {CustomerRegistered.Build(customerID, emailAddress, confirmationHash, name)};
+            registeredCustomer = Customer3.Reconstitute(events);
         }
 
         private void __and_EmailAddressWasConfirmed() {
-            eventStream.Add(CustomerEmailAddressConfirmed.Build(customerID));
+            registeredCustomer.Apply(
+                CustomerEmailAddressConfirmed.Build(customerID)
+            );
         }
 
         private void __and_EmailAddressWasChanged() {
-            eventStream.Add(CustomerEmailAddressChanged.Build(customerID, changedEmailAddress, changedConfirmationHash));
-            emailAddress = changedEmailAddress;
-            confirmationHash = changedConfirmationHash;
+            registeredCustomer.Apply(
+                CustomerEmailAddressChanged.Build(customerID, changedEmailAddress, changedConfirmationHash)
+            );
         }
 
         /**
      * Methods for WHEN
      */
 
-        private void WHEN_RegisterCustomer() {
-            var registerCustomer = global::RegisterCustomer.Build(emailAddress.Value, name.GivenName, name.FamilyName);
-            customerRegistered = Customer5.Register(registerCustomer);
+        private void WHEN_RegisterCustomer()
+        {
+            var registerCustomer = RegisterCustomer.Build(emailAddress.Value, name.GivenName, name.FamilyName);
+            customerRegistered = Customer3.Register(registerCustomer);
             customerID = registerCustomer.CustomerId;
             confirmationHash = registerCustomer.ConfirmationHash;
         }
@@ -134,8 +139,8 @@ namespace Domain.Tests.Functional.ES.Customer
         private void WHEN_ConfirmEmailAddress_With(Hash confirmationHash) {
             var command = ConfirmCustomerEmailAddress.Build(customerID.Value, confirmationHash.Value);
             try {
-                recordedEvents = Customer5.ConfirmEmailAddress(eventStream, command);
-            } catch (NullException e) {
+                recordedEvents = registeredCustomer.ConfirmEmailAddress(command);
+            } catch (NullReferenceException e) {
                 throw new XunitException(THelper.propertyIsNull("confirmationHash"));
             }
         }
@@ -143,9 +148,8 @@ namespace Domain.Tests.Functional.ES.Customer
         private void WHEN_ChangeEmailAddress_With(EmailAddress emailAddress) {
             var command = ChangeCustomerEmailAddress.Build(customerID.Value, emailAddress.Value);
             try {
-                recordedEvents = Customer5.ChangeEmailAddress(eventStream, command);
-                changedConfirmationHash = command.ConfirmationHash;
-            } catch (NullException e) {
+                recordedEvents = registeredCustomer.ChangeEmailAddress(command);
+            } catch (NullReferenceException e) {
                 throw new XunitException(THelper.propertyIsNull("emailAddress"));
             }
         }
@@ -157,48 +161,46 @@ namespace Domain.Tests.Functional.ES.Customer
         private void THEN_CustomerRegistered() {
             var method = "register";
             var eventName = "CustomerRegistered";
-            Assert.NotNull(customerRegistered, THelper.eventIsNull(method, eventName));
-            Assert.Equals(customerID, customerRegistered.CustomerID, THelper.propertyIsWrong(method, "customerID"));
-            Assert.Equals(emailAddress, customerRegistered.EmailAddress, THelper.propertyIsWrong(method, "emailAddress"));
-            Assert.Equals(confirmationHash, customerRegistered.ConfirmationHash, THelper.propertyIsWrong(method, "confirmationHash"));
-            Assert.Equals(name, customerRegistered.name, THelper.propertyIsWrong(method, "name"));
+            Assert.NotNull(customerRegistered);
+            Assert.Equal(customerID, customerRegistered.CustomerId);
+            Assert.Equal(emailAddress, customerRegistered.EmailAddress);
+            Assert.Equal(confirmationHash, customerRegistered.ConfirmationHash);
+            Assert.Equal(name, customerRegistered.Name);
         }
 
         private void THEN_EmailAddressConfirmed() {
             var method = "confirmEmailAddress";
             var eventName = "CustomerEmailAddressConfirmed";
-            Assert.Equals(1, recordedEvents.Count(), THelper.noEventWasRecorded(method, eventName));
-            Assert.NotNull(recordedEvents[0], THelper.eventIsNull(method, eventName));
-            Assert.True(recordedEvents[0] is CustomerEmailAddressConfirmed, THelper.eventOfWrongTypeWasRecorded(method));
-            var @event = (CustomerEmailAddressConfirmed) recordedEvents[0];
-            Assert.True(Equals(customerID, @event.CustomerId), THelper.propertyIsWrong(method, "customerID"));
+            recordedEvents.Count().Should().Be(1);
+            var @event = recordedEvents[0];
+            Assert.NotNull(@event);
+            Assert.True(@event is CustomerEmailAddressConfirmed);
+            ((CustomerEmailAddressConfirmed) @event).CustomerId.Should().Be(customerID);
         }
 
         private void THEN_EmailAddressConfirmationFailed() {
             var method = "confirmEmailAddress";
             var eventName = "CustomerEmailAddressConfirmationFailed";
-            assertEquals(1, recordedEvents.Count(), THelper.noEventWasRecorded(method, eventName));
-            assertNotNull(recordedEvents[0], THelper.eventIsNull(method, eventName));
-            assertEquals(CustomerEmailAddressConfirmationFailed.class, recordedEvents[0].getClass(), THelper.eventOfWrongTypeWasRecorded(method));
-            var event = (CustomerEmailAddressConfirmationFailed) recordedEvents[0];
-            assertEquals(customerID, event.customerID, THelper.propertyIsWrong(method, "customerID"));
+            Assert.Single(recordedEvents);
+            var @event = recordedEvents[0];
+            Assert.NotNull(@event);
+            Assert.Equal(customerID, ((CustomerEmailAddressConfirmationFailed) @event).CustomerId);
+            Assert.Equal(customerID, ((CustomerEmailAddressConfirmationFailed) @event).CustomerId);
         }
 
         private void THEN_EmailAddressChanged() {
             var method = "changeEmailAddress";
             var eventName = "CustomerEmailAddressChanged";
-            assertEquals(1, recordedEvents.Count(), THelper.noEventWasRecorded(method, eventName));
-            assertNotNull(recordedEvents[0], THelper.eventIsNull(method, eventName));
-            assertEquals(CustomerEmailAddressChanged.class, recordedEvents[0].getClass(), THelper.eventOfWrongTypeWasRecorded(method));
-            var event = (CustomerEmailAddressChanged) recordedEvents[0];
-            assertEquals(customerID, event.customerID, THelper.propertyIsWrong(method, "customerID"));
-            assertEquals(changedEmailAddress, event.emailAddress, THelper.propertyIsWrong(method, "emailAddress"));
-            assertEquals(changedConfirmationHash, event.confirmationHash, THelper.propertyIsWrong(method, "confirmationHash"));
+            Assert.Single(recordedEvents);
+            var @event = recordedEvents[0];
+            Assert.NotNull(@event);
+            Assert.True(@event is CustomerEmailAddressChanged);
+            Assert.Equal(customerID, ((CustomerEmailAddressChanged) @event).CustomerId);
+            Assert.Equal(changedEmailAddress, ((CustomerEmailAddressChanged) @event).EmailAddress);
         }
 
         private void THEN_NothingShouldHappen() {
-            assertEquals(0, recordedEvents.Count(),
-                THelper.noEventShouldHaveBeenRecorded(THelper.typeOfFirst(recordedEvents)));
+            Assert.Empty(recordedEvents);
         }
     }
 }

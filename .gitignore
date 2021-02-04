@@ -5,3 +5,8 @@ out
 
 .gradle
 build
+
+
+.cs
+bin
+obj

@@ -6,10 +6,10 @@ using Domain.Shared.Value;
 namespace Domain.OOP.ES.Customer
 {
     public class Customer3 {
-        public EmailAddress EmailAddress { get; }
-        public Hash ConfirmationHash { get; }
-        public bool IsEmailAddressConfirmed { get; }
-        public PersonName Name { get; }
+        public EmailAddress EmailAddress { get; private set; }
+        public Hash ConfirmationHash { get; private set; }
+        public bool IsEmailAddressConfirmed { get; private set; }
+        public PersonName Name { get; private set; }
 
         private Customer3() {
         }
